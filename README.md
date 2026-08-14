@@ -29,11 +29,26 @@ cp .env.example .env
 
 ## 使用
 
+### 一次性批量处理
+
 ```bash
 python3 mywhoosh2garmin.py
 ```
 
-首次运行会弹出文件夹选择窗口，也可在 `.env` 中配置 `MYWHOOSH_FIT_DIR` 跳过选择：
+首次运行会弹出文件夹选择窗口，也可在 `.env` 中配置 `MYWHOOSH_FIT_DIR` 跳过选择。
+
+### 自动监视目录（推荐）
+
+```bash
+# 可选：安装 watchdog 获得即时检测（否则自动回退到 5s 轮询）
+pip install watchdog
+
+python3 watch_and_sync.py
+```
+
+`watch_and_sync.py` 会持续监视 `MYWHOOSH_FIT_DIR`，每当检测到新 `.fit` 文件时自动增强并上传到 Garmin Connect。按 `Ctrl+C` 停止。
+
+> **注意：** 使用此模式必须在 `.env` 中设置 `MYWHOOSH_FIT_DIR`，无法通过弹窗选择。
 
 ### MyWhoosh FIT 文件位置
 
@@ -46,7 +61,8 @@ python3 mywhoosh2garmin.py
 
 ```
 mywhooshfit_to_garminfit/
-├── mywhoosh2garmin.py       ← 主程序（运行这个）
+├── mywhoosh2garmin.py       ← 一次性批量处理
+├── watch_and_sync.py        ← 目录监视器（自动增强+上传）
 ├── enhance_fit_cli.py       ← FIT 增强脚本
 ├── .env                     ← 配置文件（含账号密码，已 gitignore）
 ├── .env.example             ← 配置模板
