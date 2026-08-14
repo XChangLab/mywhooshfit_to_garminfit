@@ -39,12 +39,15 @@ def _avg(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
 
 
-def _calc_np(power_values: list[float]) -> float:
-    """计算 Normalized Power (NP)：4 次方平均再开 4 次方根。"""
-    if not power_values:
+def _calc_np(power_values: list[float], window: int = 30) -> float:
+    """计算 Normalized Power：30秒滚动均值 → 4次方均值 → 4次方根。"""
+    n = len(power_values)
+    if n == 0:
         return 0.0
-    avg_4th = sum(p ** 4 for p in power_values) / len(power_values)
-    return avg_4th ** 0.25
+    if n < window:
+        return _avg(power_values)
+    rolling = [_avg(power_values[i - window + 1: i + 1]) for i in range(window - 1, n)]
+    return (sum(p ** 4 for p in rolling) / len(rolling)) ** 0.25
 
 
 def _set_field(msg, field_name: str, value):
@@ -77,7 +80,6 @@ def enhance_fit(input_path: Path, output_path: Path,
     cadence_vals: list[float] = []
     power_vals: list[float] = []
     hr_vals: list[float] = []
-    speed_vals: list[float] = []
 
     all_power: list[float] = []
     all_hr: list[float] = []
@@ -134,12 +136,6 @@ def enhance_fit(input_path: Path, output_path: Path,
                     all_hr.append(float(v))
             except (AttributeError, ValueError):
                 pass
-            try:
-                v = msg.speed
-                if v and v > 0:
-                    speed_vals.append(float(v))
-            except (AttributeError, ValueError):
-                pass
             continue
 
         # ── Lap: 标记强度 + 填充平均值 ───────────────────────────
@@ -155,7 +151,7 @@ def enhance_fit(input_path: Path, output_path: Path,
                 _set_field(msg, "avg_heart_rate", round(_avg(hr_vals)))
             if not getattr(msg, "max_heart_rate", None) and hr_vals:
                 _set_field(msg, "max_heart_rate", round(max(hr_vals)))
-            cadence_vals, power_vals, hr_vals, speed_vals = [], [], [], []
+            cadence_vals, power_vals, hr_vals = [], [], []
             continue
 
         # ── Session: 设置运动类型 + 强度指标 ────────────────────

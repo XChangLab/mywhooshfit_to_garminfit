@@ -39,17 +39,6 @@ def load_env():
             os.environ.setdefault(key, val)
 
 
-def detect_python():
-    """检测可用的 Python 命令"""
-    for cmd in [sys.executable, 'python3', 'python']:
-        try:
-            subprocess.run([cmd, '--version'], capture_output=True, check=True)
-            return cmd
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            continue
-    return None
-
-
 def check_deps():
     """检查 Python 依赖"""
     missing = []
