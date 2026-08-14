@@ -1,0 +1,3 @@
+fit-tool
+garminconnect
+watchdog  # optional: faster file detection in watch_and_sync.py
